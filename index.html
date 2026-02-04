@@ -3,70 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
-    <script src="https://api.tranzila.com/hostedfields/v1/hostedfields.js"></script>
+    <script src="https://hf.tranzila.com/assets/js/thostedf.js"></script>
     
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 10px; }
-        #card-field-container { width: 100%; max-width: 400px; }
-        #card-field { 
-            border: 1px solid #ced4da; 
-            padding: 12px; 
-            border-radius: 4px; 
-            height: 45px; 
-            background: white;
-            box-sizing: border-box;
-        }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #2c3345; }
-        .error { color: #d9534f; font-size: 13px; margin-top: 8px; display: none; }
+        body { font-family: sans-serif; margin: 0; padding: 10px; }
+        .form-control { border: 1px solid #ced4da; padding: 12px; border-radius: 4px; height: 45px; background: white; margin-bottom: 10px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        .error_message { color: #d9534f; font-size: 13px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="card-field-container">
-        <label>Credit Card Details</label>
-        <div id="card-field"></div>
-        <div id="error-msg" class="error">Invalid card information. Please try again.</div>
+    <div class="col-md-4 mb-3">
+        <label for="credit_card_number">Card Information</label>
+        <div class="form-control" id="credit_card_number"></div>
+        <div id="errors_for_number" class="error_message"></div>
     </div>
 
     <script>
-        // 1. Initialize Tranzila Hosted Fields with your specific terminal
-        var hostedFields = tranzila.hostedFields({
-            terminalName: 'toratshraga', // Your MasofName
-            fields: {
-                card: { 
-                    selector: '#card-field', 
-                    placeholder: 'Card Number    MM/YY    CVC' 
-                }
-            },
-            styles: {
-                input: { 'font-size': '16px', 'color': '#495057', 'font-family': 'sans-serif' }
+        // Initialize the fields once the page is ready
+        var fields;
+        
+        // Wait for Tranzila library to load
+        window.onload = function() {
+            if (typeof TzlaHostedFields !== 'undefined') {
+                fields = TzlaHostedFields.create({
+                    sandbox: false, // Mandatory per docs
+                    fields: {
+                        credit_card_number: { selector: '#credit_card_number' }
+                    }
+                });
             }
-        });
+        };
 
-        // 2. This function triggers when the student hits the Jotform "Submit" button
+        // Handle Jotform Submit
         JFCustomWidget.subscribe("submit", function() {
-            
-            // Hide previous errors
-            document.getElementById('error-msg').style.display = 'none';
-
-            // Request the Token from Tranzila
-            hostedFields.createToken({
-                tranmode: 'V',      // V = Verify (Validates card without charging)
-                TranzilaTK: '1'     // 1 = Tells Tranzila to return a permanent token
-            }, function(response) {
-                if (response.success && response.TranzilaTK) {
-                    // SUCCESS: Send the token back to Jotform's database
+            fields.charge({
+                terminal_name: 'toratshraga',
+                tranmode: 'V', // Verify mode for tokenization
+                tranzilaTK: '1' // Request permanent token
+            }, function(err, response) {
+                if (err) {
+                    document.getElementById('errors_for_number').innerText = "Invalid Card Details";
+                    JFCustomWidget.sendSubmit({ valid: false });
+                } else if (response && response.TranzilaTK) {
+                    // Send token to Jotform
                     JFCustomWidget.sendSubmit({
                         valid: true,
                         value: response.TranzilaTK
-                    });
-                } else {
-                    // FAILURE: Show error and stop Jotform from submitting
-                    document.getElementById('error-msg').style.display = 'block';
-                    console.error("Tranzila Error:", response.error);
-                    
-                    JFCustomWidget.sendSubmit({
-                        valid: false
                     });
                 }
             });
