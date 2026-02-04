@@ -4,53 +4,50 @@
     <meta charset="UTF-8">
     <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 0; background: transparent; }
-        /* High height to ensure Tranzila fields aren't cut off */
-        #tranzila-frame { width: 100%; height: 600px; border: none; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <form id="tranzila-form" action="https://direct.tranzila.com/toratshraga/iframenew.php" method="POST" target="tranzila-frame">
-        <input type="hidden" name="sum" value="1"> 
-        <input type="hidden" name="currency" value="1"> 
-        <input type="hidden" name="tranmode" value="VK">
-        <input type="hidden" name="contact" value="Student Registration">
-        <input type="hidden" name="nologo" value="1">
-        <input type="hidden" name="hidesum" value="1">
-    </form>
-
-    <iframe name="tranzila-frame" id="tranzila-frame" allow="payment"></iframe>
+    <div id="setup-view">
+        <p>Click below to securely provide card details for registration.</p>
+        <button class="btn" onclick="openTranzila()">Add Credit Card</button>
+    </div>
 
     <script>
-        // Start Tranzila
-        window.onload = function() {
-            document.getElementById('tranzila-form').submit();
-        };
+        function openTranzila() {
+            // This URL opens Tranzila's own secure page directly
+            var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
+                "sum=1&currency=1&tranmode=VK&contact=Student&nologo=1&hidesum=1";
+            
+            // Open it in a popup so it doesn't clash with Jotform's scripts
+            var width = 500;
+            var height = 600;
+            var left = (window.innerWidth / 2) - (width / 2);
+            var top = (window.innerHeight / 2) - (height / 2);
+            
+            window.open(tranzilaUrl, "Tranzila", "width="+width+",height="+height+",top="+top+",left="+left);
+        }
 
-        // Listen for the response
+        // Listen for the Token coming back
         window.addEventListener("message", function(event) {
+            // Tranzila usually sends the data back to the 'opener' window
             var data = event.data;
-
-            // Fix for the "[object Object] is not valid JSON" error
-            // If it's already an object, we use it directly. 
-            // If it's a string, we try to parse it safely.
-            var payload;
-            if (typeof data === 'object' && data !== null) {
-                payload = data;
-            } else if (typeof data === 'string') {
-                try {
-                    payload = JSON.parse(data);
-                } catch (e) {
-                    return; // Ignore non-JSON messages
-                }
+            
+            // Handle both String and Object responses
+            if (typeof data === 'string') {
+                try { data = JSON.parse(data); } catch(e) {}
             }
 
-            if (payload && (payload.TranzilaTK || payload.temp_token)) {
-                var token = payload.TranzilaTK || payload.temp_token;
+            if (data && data.TranzilaTK) {
+                // Success! Save to Jotform
+                JFCustomWidget.sendData({ value: data.TranzilaTK });
                 
-                // Send the token back to your Jotform submission
-                JFCustomWidget.sendData({ value: token });
+                // Update UI to show it worked
+                document.getElementById('setup-view').innerHTML = "<b>✅ Card Linked Successfully</b>";
+                
+                // Allow Jotform to submit
                 JFCustomWidget.sendSubmit({ valid: true });
             }
         }, false);
