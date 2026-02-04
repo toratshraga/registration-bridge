@@ -4,40 +4,43 @@
     <meta charset="UTF-8">
     <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        body { font-family: sans-serif; text-align: center; padding: 10px; margin: 0; }
         .pay-button { 
             background: #2e69ff; color: white; border: none; 
-            padding: 12px 24px; border-radius: 4px; font-weight: bold; 
-            cursor: pointer; font-size: 16px;
+            padding: 15px 25px; border-radius: 6px; font-weight: bold; 
+            cursor: pointer; font-size: 16px; width: 100%;
         }
-        .pay-button:hover { background: #1a54e6; }
-        #status { margin-top: 15px; color: #555; font-size: 14px; }
+        #status-text { margin-top: 10px; font-size: 13px; color: #666; }
+        .success { color: green; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="action-area">
-        <button class="pay-button" onclick="launchTranzila()">Step 2: Add Credit Card Details</button>
-        <div id="status">Click to verify your card via Tranzila secure portal.</div>
+    <div id="widget-container">
+        <button type="button" class="pay-button" onclick="openPayment()">
+            Link Credit Card via Tranzila
+        </button>
+        <div id="status-text">Click to securely verify your card.</div>
     </div>
 
     <script>
-        function launchTranzila() {
-            // This is the direct link to your terminal's payment page
+        function openPayment() {
+            // This is a direct link that opens Tranzila's OWN secure page
+            // No scripts to clash, no iframe permissions issues.
             var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
-                             "sum=1&currency=1&tranmode=VK&contact=Student&nologo=1";
+                             "sum=1&currency=1&tranmode=VK&contact=Registration&nologo=1";
             
-            // Open in a new tab/window to avoid Jotform script conflicts
-            window.open(tranzilaUrl, "_blank");
+            // Open it in a new window
+            window.open(tranzilaUrl, 'TranzilaPayment', 'width=500,height=700');
             
-            document.getElementById('status').innerText = "Please complete the card details in the new window.";
+            document.getElementById('status-text').innerHTML = "Opening secure window... <br>Please return here after completion.";
         }
 
-        // Listen for the response (this part requires Step 2 below)
+        // We stay ready to receive the token if you set up the success URL
         window.addEventListener("message", function(event) {
             if (event.data && event.data.TranzilaTK) {
                 JFCustomWidget.sendData({ value: event.data.TranzilaTK });
-                document.getElementById('action-area').innerHTML = "<b>✅ Card Successfully Linked</b>";
+                document.getElementById('widget-container').innerHTML = "<div class='success'>✅ Card Linked Successfully</div>";
                 JFCustomWidget.sendSubmit({ valid: true });
             }
         });
