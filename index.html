@@ -25,43 +25,39 @@
         <div id="status-text">Click to securely verify your card via Tranzila.</div>
     </div>
 
-    <script>
-        function launchTranzila() {
-            // REPLACE [your-username] below with your actual GitHub username
-            var successUrl = "https://[your-username].github.io/registration-bridge/success.html";
-            
-            var tranzilaUrl = "https://direct.tranzila.com/toratshragatok/iframenew.php?" + 
-                             "sum=1" +
-                             "&currency=1" + 
-                             "&tranmode=VK" + 
-                             "&contact=Registration" + 
-                             "&success_url_address=" + encodeURIComponent(successUrl) +
-                             "&nologo=1" +
-                             "&hidesum=1";
-            
-            var width = 500;
-            var height = 700;
-            var left = (window.innerWidth / 2) - (width / 2);
-            var top = (window.innerHeight / 2) - (height / 2);
+<script>
+    function launchTranzila() {
+        // Replace [your-username] with your actual GitHub username
+        var successUrl = "https://[toratshraga].github.io/registration-bridge/success.html";
+        
+        // The Date.now() part at the end forces the browser to refresh the link
+        var tranzilaUrl = "https://direct.tranzila.com/toratshragatok/iframenew.php?" + 
+                         "sum=1" +
+                         "&currency=1" + 
+                         "&tranmode=VK" + 
+                         "&contact=Registration" + 
+                         "&success_url_address=" + encodeURIComponent(successUrl) +
+                         "&nologo=1" +
+                         "&hidesum=1" +
+                         "&v=" + Date.now();
+        
+        var width = 500;
+        var height = 700;
+        var left = (window.innerWidth / 2) - (width / 2);
+        var top = (window.innerHeight / 2) - (height / 2);
 
-            window.open(tranzilaUrl, 'TranzilaPayment', "width="+width+",height="+height+",top="+top+",left="+left);
-            
-            document.getElementById('status-text').innerHTML = "<b>Window Opened.</b><br>Please complete the verification there.";
+        window.open(tranzilaUrl, 'TranzilaPayment', "width="+width+",height="+height+",top="+top+",left="+left);
+        
+        document.getElementById('status-text').innerHTML = "<b>Window Opened for toratshragatok.</b>";
+    }
+
+    window.addEventListener("message", function(event) {
+        if (event.data && event.data.TranzilaTK) {
+            JFCustomWidget.sendData({ value: event.data.TranzilaTK });
+            document.getElementById('widget-container').innerHTML = "<div class='success'>✅ Card Linked to toratshragatok</div>";
+            JFCustomWidget.sendSubmit({ valid: true });
         }
-
-        // Listen for the Token from the success page
-        window.addEventListener("message", function(event) {
-            if (event.data && event.data.TranzilaTK) {
-                // Send token to Jotform
-                JFCustomWidget.sendData({ value: event.data.TranzilaTK });
-                
-                // Update the UI
-                document.getElementById('widget-container').innerHTML = "<div class='success'>✅ Card Linked to toratshragatok</div>";
-                
-                // Tell Jotform the widget is now "Valid" for submission
-                JFCustomWidget.sendSubmit({ valid: true });
-            }
-        }, false);
-    </script>
+    }, false);
+</script>
 </body>
 </html>
