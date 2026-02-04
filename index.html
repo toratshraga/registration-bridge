@@ -7,47 +7,60 @@
     
     <style>
         body { font-family: sans-serif; margin: 0; padding: 10px; }
-        .form-control { border: 1px solid #ced4da; padding: 12px; border-radius: 4px; height: 45px; background: white; margin-bottom: 10px; }
+        .form-control { border: 1px solid #ced4da; padding: 12px; border-radius: 4px; height: 45px; background: white; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
-        .error_message { color: #d9534f; font-size: 13px; margin-top: 5px; }
+        #status { font-size: 12px; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="col-md-4 mb-3">
-        <label for="credit_card_number">Card Information</label>
+    <div>
+        <label>Credit Card Details</label>
         <div class="form-control" id="credit_card_number"></div>
-        <div id="errors_for_number" class="error_message"></div>
+        <div id="status">Loading secure fields...</div>
     </div>
 
     <script>
-        // Initialize the fields once the page is ready
-        var fields;
-        
-        // Wait for Tranzila library to load
+        var hostedFields;
+
+        // Check if the Tranzila library loaded correctly
         window.onload = function() {
             if (typeof TzlaHostedFields !== 'undefined') {
-                fields = TzlaHostedFields.create({
-                    sandbox: false, // Mandatory per docs
-                    fields: {
-                        credit_card_number: { selector: '#credit_card_number' }
-                    }
-                });
+                document.getElementById('status').innerText = "Tranzila Library Loaded. Initializing...";
+                
+                try {
+                    hostedFields = TzlaHostedFields.create({
+                        sandbox: false,
+                        fields: {
+                            credit_card_number: { selector: '#credit_card_number' }
+                        }
+                    });
+                    document.getElementById('status').innerText = "Ready.";
+                } catch (e) {
+                    document.getElementById('status').innerText = "Error: " + e.message;
+                }
+            } else {
+                document.getElementById('status').innerText = "Error: Tranzila library blocked. Please whitelist this domain.";
             }
         };
 
-        // Handle Jotform Submit
+        // Jotform Submit Logic
         JFCustomWidget.subscribe("submit", function() {
-            fields.charge({
+            if (!hostedFields) {
+                JFCustomWidget.sendSubmit({ valid: false });
+                return;
+            }
+
+            hostedFields.charge({
                 terminal_name: 'toratshraga',
-                tranmode: 'V', // Verify mode for tokenization
-                tranzilaTK: '1' // Request permanent token
+                tranmode: 'V', // Verify
+                tranzilaTK: '1' // Tokenize
             }, function(err, response) {
                 if (err) {
-                    document.getElementById('errors_for_number').innerText = "Invalid Card Details";
+                    alert("Card validation failed.");
                     JFCustomWidget.sendSubmit({ valid: false });
                 } else if (response && response.TranzilaTK) {
-                    // Send token to Jotform
+                    // This sends the token to your Jotform submission
                     JFCustomWidget.sendSubmit({
                         valid: true,
                         value: response.TranzilaTK
