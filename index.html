@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
+    <script src="https://api.tranzila.com/hostedfields/v1/hostedfields.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 10px; }
+        #card-field { border: 1px solid #ccc; padding: 10px; border-radius: 4px; height: 40px; }
+        .error { color: red; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div id="card-field-container">
+        <label>Credit Card Information</label>
+        <div id="card-field"></div> <div id="error-msg" class="error"></div>
+    </div>
+
+    <script>
+        // 1. Initialize Tranzila Hosted Fields
+        var hostedFields = tranzila.hostedFields({
+            terminalName: 'toratshraga', // Your MasofName
+            fields: {
+                card: { selector: '#card-field', placeholder: 'Card Number, Exp, CVV' }
+            },
+            styles: {
+                input: { 'font-size': '16px', 'color': '#333' }
+            }
+        });
+
+        // 2. Listen for the Jotform Submit event
+        JFCustomWidget.subscribe("submit", function() {
+            hostedFields.createToken({
+                tranmode: 'V',      // Verify mode
+                TranzilaTK: '1'     // Request the Token
+            }, function(response) {
+                if (response.success) {
+                    // Send the Token back to Jotform
+                    JFCustomWidget.sendSubmit({
+                        valid: true,
+                        value: response.TranzilaTK
+                    });
+                } else {
+                    document.getElementById('error-msg').innerText = "Invalid Card Details";
+                    JFCustomWidget.sendSubmit({ valid: false });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
