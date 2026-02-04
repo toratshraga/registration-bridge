@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 0; }
+        body { font-family: sans-serif; margin: 0; padding: 0; background: transparent; }
         #tranzila-frame { width: 100%; height: 600px; border: none; }
     </style>
 </head>
@@ -13,34 +13,43 @@
     <form id="tranzila-form" action="https://direct.tranzila.com/toratshraga/iframenew.php" method="POST" target="tranzila-frame">
         <input type="hidden" name="sum" value="1"> 
         <input type="hidden" name="currency" value="1"> 
-        <input type="hidden" name="tranmode" value="VK"> <input type="hidden" name="contact" id="contact_name" value="Student Registration">
-        
+        <input type="hidden" name="tranmode" value="VK">
+        <input type="hidden" name="contact" id="contact_name" value="Student Registration">
         <input type="hidden" name="nologo" value="1">
         <input type="hidden" name="hidesum" value="1">
     </form>
 
-    <iframe name="tranzila-frame" id="tranzila-frame"></iframe>
+    <iframe name="tranzila-frame" id="tranzila-frame" allow="payment"></iframe>
 
     <script>
-        // 1. Get student name from Jotform if available
-        JFCustomWidget.subscribe("ready", function(data) {
-            // If you pass the name via Jotform field, we can grab it here
-            // For now, it defaults to "Student Registration"
+        // Submit the form immediately to load Tranzila
+        window.onload = function() {
             document.getElementById('tranzila-form').submit();
-        });
+        };
 
-        // 2. Listen for the token response
+        // Improved listener to handle the [object Object] error
         window.addEventListener("message", function(event) {
-            // Tranzila sends the result back via postMessage
-            if (event.data) {
-                var res = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                
-                if (res.TranzilaTK) {
-                    // Success: Send token to Jotform
-                    JFCustomWidget.sendData({ value: res.TranzilaTK });
-                    // Tell Jotform the field is valid
-                    JFCustomWidget.sendSubmit({ valid: true });
+            var data = event.data;
+
+            // If it's already an object, don't parse it
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    // Not a JSON string, ignore
+                    return;
                 }
+            }
+
+            // Check for the Token (TranzilaTK)
+            if (data && (data.TranzilaTK || data.temp_token)) {
+                var token = data.TranzilaTK || data.temp_token;
+                
+                // Send to Jotform
+                JFCustomWidget.sendData({ value: token });
+                
+                // Let Jotform know it's ready to submit
+                JFCustomWidget.sendSubmit({ valid: true });
             }
         }, false);
     </script>
