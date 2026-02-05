@@ -12,7 +12,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .pay-button:hover { background: #1a54e6; }
-        #status-text { margin-top: 12px; font-size: 14px; color: #666; line-height: 1.4; }
+        #status-text { margin-top: 12px; font-size: 14px; color: #666; }
         .success { color: #28a745; font-weight: bold; font-size: 16px; }
     </style>
 </head>
@@ -20,44 +20,44 @@
 
     <div id="widget-container">
         <button type="button" class="pay-button" onclick="launchTranzila()">
-            Step 2: Link Credit Card
+            Click to Verify Credit Card
         </button>
-        <div id="status-text">Click to securely verify your card via Tranzila.</div>
+        <div id="status-text">You will be asked for card and billing details.</div>
     </div>
 
-<script>
-    function launchTranzila() {
-        // Replace [your-username] with your actual GitHub username
-        var successUrl = "https://[toratshraga].github.io/registration-bridge/success.html";
-        
-        // The Date.now() part at the end forces the browser to refresh the link
-        var tranzilaUrl = "https://direct.tranzila.com/toratshragatok/iframenew.php?" + 
-                         "sum=1" +
-                         "&currency=1" + 
-                         "&tranmode=VK" + 
-                         "&contact=Registration" + 
-                         "&success_url_address=" + encodeURIComponent(successUrl) +
-                         "&nologo=1" +
-                         "&hidesum=1" +
-                         "&v=" + Date.now();
-        
-        var width = 500;
-        var height = 700;
-        var left = (window.innerWidth / 2) - (width / 2);
-        var top = (window.innerHeight / 2) - (height / 2);
+    <script>
+        function launchTranzila() {
+            var successUrl = "https://[your-username].github.io/registration-bridge/success.html";
+            
+            // Build URL with Personal Info fields enabled
+            var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
+                             "sum=1" +
+                             "&currency=1" + 
+                             "&tranmode=VK" + // V=Verify (No Charge), K=Tokenize
+                             "&success_url_address=" + encodeURIComponent(successUrl) +
+                             "&nologo=1" +
+                             "&hidesum=1" +
+                             "&contact=1" + // Show Contact Name field
+                             "&email=1" +   // Show Email field
+                             "&address=1" + // Show Address field
+                             "&city=1" +    // Show City field
+                             "&v=" + Date.now();
+            
+            var width = 550;
+            var height = 800; // Increased height for more fields
+            var left = (window.innerWidth / 2) - (width / 2);
+            var top = (window.innerHeight / 2) - (height / 2);
 
-        window.open(tranzilaUrl, 'TranzilaPayment', "width="+width+",height="+height+",top="+top+",left="+left);
-        
-        document.getElementById('status-text').innerHTML = "<b>Window Opened for toratshragatok.</b>";
-    }
-
-    window.addEventListener("message", function(event) {
-        if (event.data && event.data.TranzilaTK) {
-            JFCustomWidget.sendData({ value: event.data.TranzilaTK });
-            document.getElementById('widget-container').innerHTML = "<div class='success'>✅ Card Linked to toratshragatok</div>";
-            JFCustomWidget.sendSubmit({ valid: true });
+            window.open(tranzilaUrl, 'TranzilaPayment', "width="+width+",height="+height+",top="+top+",left="+left);
         }
-    }, false);
-</script>
+
+        window.addEventListener("message", function(event) {
+            if (event.data && event.data.TranzilaTK) {
+                JFCustomWidget.sendData({ value: event.data.TranzilaTK });
+                document.getElementById('widget-container').innerHTML = "<div class='success'>✅ Card Verified & Linked</div>";
+                JFCustomWidget.sendSubmit({ valid: true });
+            }
+        }, false);
+    </script>
 </body>
 </html>
