@@ -4,53 +4,41 @@
     <meta charset="UTF-8">
     <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
+        body { font-family: sans-serif; text-align: center; padding: 15px; margin: 0; }
         .pay-button { 
             background: #2e69ff; color: white; border: none; 
-            padding: 16px 30px; border-radius: 6px; font-weight: bold; 
+            padding: 18px 30px; border-radius: 6px; font-weight: bold; 
             cursor: pointer; font-size: 16px; width: 100%;
         }
+        #status-text { margin-top: 10px; font-size: 13px; color: #666; }
     </style>
 </head>
 <body>
 
     <div id="widget-container">
-        <button type="button" class="pay-button" onclick="launchTranzila()">
-            Verify Card & Billing Details
+        <button type="button" class="pay-button" onclick="openFullTranzila()">
+            Click to Enter Billing & Card Details
         </button>
-        <p id="status-text" style="color: #666; font-size: 14px;">Secure verification via Tranzila</p>
+        <div id="status-text">A secure window will open for you to type your information.</div>
     </div>
 
     <script>
-function launchTranzila() {
-    // REPLACE [your-username] with your real GitHub username
-    var successUrl = "https://[your-username].github.io/registration-bridge/success.html";
-    
-    // We send a space (%20) to force the fields to show up even if 
-    // the dashboard has them "hidden" by default.
-    var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
-                     "sum=1" +
-                     "&currency=1" + 
-                     "&tranmode=VK" + 
-                     "&success_url_address=" + encodeURIComponent(successUrl) +
-                     "&nologo=1" +
-                     "&hidesum=1" + 
-                     "&pdesc=" + encodeURIComponent("Card Verification") + 
-                     "&contact=%20" + // Space forces the 'Name' box to show
-                     "&email=%20" +   // Space forces the 'Email' box to show
-                     "&address=%20" + // Space forces the 'Address' box to show
-                     "&v=" + Date.now();
-    
-    window.open(tranzilaUrl, 'TranzilaPayment', "width=550,height=800,top=100,left=100");
-}
+        function openFullTranzila() {
+            // Using index.php instead of iframenew.php
+            // This pulls the "Full Page" version of your terminal
+            var tranzilaUrl = "https://direct.tranzila.com/toratshraga/index.php?" + 
+                             "sum=1" +
+                             "&currency=1" + 
+                             "&tranmode=VK" + 
+                             "&nologo=1" +
+                             "&pdesc=" + encodeURIComponent("Card Verification");
+            
+            // Open in a new tab/window so they have plenty of room to type
+            window.open(tranzilaUrl, '_blank');
 
-        window.addEventListener("message", function(event) {
-            if (event.data && event.data.TranzilaTK) {
-                JFCustomWidget.sendData({ value: event.data.TranzilaTK });
-                document.getElementById('widget-container').innerHTML = "<b style='color:green'>✅ Card Verified</b>";
-                JFCustomWidget.sendSubmit({ valid: true });
-            }
-        }, false);
+            // Tell Jotform they've clicked the button
+            JFCustomWidget.sendData({ value: "Opened Tranzila Full Form" });
+        }
     </script>
 </body>
 </html>
