@@ -22,28 +22,27 @@
     </div>
 
     <script>
-        function launchTranzila() {
-            // REPLACE [your-username]
-            var successUrl = "https://[your-username].github.io/registration-bridge/success.html";
-            
-            // We use 'pdesc' to show the user what this is for (Verification)
-            // We pass the field names without values to force them to be empty input boxes
-            var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
-                             "sum=1" +
-                             "&currency=1" + 
-                             "&tranmode=VK" + 
-                             "&success_url_address=" + encodeURIComponent(successUrl) +
-                             "&nologo=1" +
-                             "&hidesum=1" + 
-                             "&pdesc=" + encodeURIComponent("Card Verification for Registration") + 
-                             "&contact=" + 
-                             "&email=" + 
-                             "&address=" + 
-                             "&city=" + 
-                             "&v=" + Date.now();
-            
-            window.open(tranzilaUrl, 'TranzilaPayment', "width=550,height=800,top=100,left=100");
-        }
+function launchTranzila() {
+    // REPLACE [your-username] with your real GitHub username
+    var successUrl = "https://[your-username].github.io/registration-bridge/success.html";
+    
+    // We send a space (%20) to force the fields to show up even if 
+    // the dashboard has them "hidden" by default.
+    var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
+                     "sum=1" +
+                     "&currency=1" + 
+                     "&tranmode=VK" + 
+                     "&success_url_address=" + encodeURIComponent(successUrl) +
+                     "&nologo=1" +
+                     "&hidesum=1" + 
+                     "&pdesc=" + encodeURIComponent("Card Verification") + 
+                     "&contact=%20" + // Space forces the 'Name' box to show
+                     "&email=%20" +   // Space forces the 'Email' box to show
+                     "&address=%20" + // Space forces the 'Address' box to show
+                     "&v=" + Date.now();
+    
+    window.open(tranzilaUrl, 'TranzilaPayment', "width=550,height=800,top=100,left=100");
+}
 
         window.addEventListener("message", function(event) {
             if (event.data && event.data.TranzilaTK) {
