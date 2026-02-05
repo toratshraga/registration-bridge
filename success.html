@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verification Successful</title>
+</head>
+<body style="text-align: center; font-family: sans-serif; padding-top: 50px;">
+    <h2>✅ Card Verified</h2>
+    <p>Closing window and returning to form...</p>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('TranzilaTK');
+
+        if (token && window.opener) {
+            window.opener.postMessage({ TranzilaTK: token }, "*");
+            setTimeout(function() { window.close(); }, 1500);
+        } else {
+            document.body.innerHTML = "<h2>Error</h2><p>Token not found. Please contact support.</p>";
+        }
+    </script>
+</body>
+</html>
