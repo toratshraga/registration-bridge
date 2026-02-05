@@ -4,57 +4,51 @@
     <meta charset="UTF-8">
     <script src="https://js.jotform.com/JotFormCustomWidget.min.js"></script>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; text-align: center; padding: 15px; margin: 0; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
         .pay-button { 
             background: #2e69ff; color: white; border: none; 
             padding: 16px 30px; border-radius: 6px; font-weight: bold; 
             cursor: pointer; font-size: 16px; width: 100%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .pay-button:hover { background: #1a54e6; }
-        #status-text { margin-top: 12px; font-size: 14px; color: #666; }
-        .success { color: #28a745; font-weight: bold; font-size: 16px; }
     </style>
 </head>
 <body>
 
     <div id="widget-container">
         <button type="button" class="pay-button" onclick="launchTranzila()">
-            Click to Verify Credit Card
+            Verify Card & Billing Details
         </button>
-        <div id="status-text">You will be asked for card and billing details.</div>
+        <p id="status-text" style="color: #666; font-size: 14px;">Secure verification via Tranzila</p>
     </div>
 
     <script>
         function launchTranzila() {
+            // REPLACE [your-username]
             var successUrl = "https://[your-username].github.io/registration-bridge/success.html";
             
-            // Build URL with Personal Info fields enabled
+            // We use 'pdesc' to show the user what this is for (Verification)
+            // We pass the field names without values to force them to be empty input boxes
             var tranzilaUrl = "https://direct.tranzila.com/toratshraga/iframenew.php?" + 
                              "sum=1" +
                              "&currency=1" + 
-                             "&tranmode=VK" + // V=Verify (No Charge), K=Tokenize
+                             "&tranmode=VK" + 
                              "&success_url_address=" + encodeURIComponent(successUrl) +
                              "&nologo=1" +
-                             "&hidesum=1" +
-                             "&contact=1" + // Show Contact Name field
-                             "&email=1" +   // Show Email field
-                             "&address=1" + // Show Address field
-                             "&city=1" +    // Show City field
+                             "&hidesum=1" + 
+                             "&pdesc=" + encodeURIComponent("Card Verification for Registration") + 
+                             "&contact=" + 
+                             "&email=" + 
+                             "&address=" + 
+                             "&city=" + 
                              "&v=" + Date.now();
             
-            var width = 550;
-            var height = 800; // Increased height for more fields
-            var left = (window.innerWidth / 2) - (width / 2);
-            var top = (window.innerHeight / 2) - (height / 2);
-
-            window.open(tranzilaUrl, 'TranzilaPayment', "width="+width+",height="+height+",top="+top+",left="+left);
+            window.open(tranzilaUrl, 'TranzilaPayment', "width=550,height=800,top=100,left=100");
         }
 
         window.addEventListener("message", function(event) {
             if (event.data && event.data.TranzilaTK) {
                 JFCustomWidget.sendData({ value: event.data.TranzilaTK });
-                document.getElementById('widget-container').innerHTML = "<div class='success'>✅ Card Verified & Linked</div>";
+                document.getElementById('widget-container').innerHTML = "<b style='color:green'>✅ Card Verified</b>";
                 JFCustomWidget.sendSubmit({ valid: true });
             }
         }, false);
